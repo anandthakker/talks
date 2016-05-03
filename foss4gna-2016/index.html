@@ -11,6 +11,18 @@
     em, .em { color: #cf3f02; }
     small { font-weight: normal; white-space: pre; }
     pre { font-weight: normal; }
+    .github-links {
+      list-style-type: none;
+      margin-left: 50px;
+      line-height: 1.5;
+    }
+    .github-links li a {
+      background: black;
+      color: #34d0e7;
+    }
+    .github-links li a:before {
+      content: '/';
+    }
   </style>
 </head>
 <body>
@@ -160,14 +172,14 @@ function postAggregate (cell) {
   </div>
 
   <div>
-    Links
-    <ul>
-      <li><a href='https://github.com/anandthakker/talks'>code for this talk</a></li>
-      <li><a href='https://github.com/mapbox/tippecanoe'>tippecanoe</a></li>
-      <li><a href='https://github.com/mapbox/tile-reduce'>tile-reduce</a></li>
-      <li><a href='https://github.com/developmentseed/vt-grid'>vt-grid</a></li>
-      <li><a href='https://github.com/developmentseed/mapbox-gl-datadriven'>mapbox-gl-datadriven</a></li>
-      <li><a href='https://github.com/anandthakker/mapbox-gl-datascope'>mapbox-gl-datascope</a></li>
+    https://github.com
+    <ul class='github-links'>
+      <li><a href='https://github.com/anandthakker/talks'>anandthakker/talks</a></li>
+      <li><a href='https://github.com/mapbox/tippecanoe'>mapbox/tippecanoe</a></li>
+      <li><a href='https://github.com/mapbox/tile-reduce'>mapbox/tile-reduce</a></li>
+      <li><a href='https://github.com/developmentseed/vt-grid'>developmentseed/vt-grid</a></li>
+      <li><a href='https://github.com/anandthakker/mapbox-gl-datadriven'>anandthakker/mapbox-gl-datadriven</a></li>
+      <li><a href='https://github.com/anandthakker/mapbox-gl-datascope'>anandthakker/mapbox-gl-datascope</a></li>
     </ul>
   </div>
 
