@@ -134,10 +134,10 @@ These are the same problems faced when trying to render in the browser, and this
   <div>
     Building the Vector Tiles: <em>vt-grid</em>
 <pre>
-<span style='color: gray'>// run over each "raw input" feature</span>
+<span style='color: gray'>// run over each "raw" input feature</span>
 function aggregate (sum, feature) {
   if (feature.properties.highway) {
-    return sum + lineDistance(feature)
+    return <em>sum + lineDistance(feature)</em>
   } else {
     return sum
   }
@@ -145,7 +145,7 @@ function aggregate (sum, feature) {
 <span style='color: gray'>// apply to each grid cell output</span>
 function postAggregate (cell) {
   var length = cell.properties.roads_km
-  return length / area(cell.geometry)
+  return <em>length / area(cell.geometry)</em>
 }
 </pre>
     <notes>
