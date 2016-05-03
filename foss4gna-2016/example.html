@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='//api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+    <link href='//api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
+    <script src='//anandthakker.github.io/mapbox-gl-datadriven/dist/mapbox-gl-datadriven.js'></script>
+    <script src='//anandthakker.github.io/mapbox-gl-datascope/dist/mapbox-gl-datascope.js'></script>
+    <link href='//anandthakker/github.io/mapbox-gl-datascope/dist/mapbox-gl-datascope.css' rel='stylesheet' />
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-popup,
+        .mapboxgl-popup * { pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJjaW4wOW1taTkwN3c5d2tsdXg3aXRrMjZhIn0.QpBLQwr3XzYs6xh6b8hbcQ';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v8', //stylesheet location
+    center: [-77.0560, 38.8862], // starting position
+    zoom: 11 // starting zoom
+});
+
+var layers = mapboxgl.datadriven(map, {
+  source: {
+    type: 'vector',
+    url: 'mapbox://devseed.us-roads-4096'
+  },
+  'source-layer': 'osm',
+  paint: {
+    'fill-color': '#00aa88',
+    'fill-outline-color': '#00aa88'
+  },
+  styleProperty: 'fill-opacity',
+  styleFunction: {
+    property: 'road_density',
+    stops: [
+      [0, 0.1],
+      [2, 0.25],
+      [4, 0.5],
+      [8, 0.75],
+      [16, 0.9]
+    ]
+  }
+})
+
+mapboxgl.datascope(map, {
+  layers: layers,
+  properties: {
+    road_density: {
+      name: 'Road Density (km/km2)',
+      format: (x) => x.toFixed(1)
+    },
+    road_length: {
+      name: 'Total Road Length (km)',
+      format: (x) => x.toFixed(0)
+    }
+  },
+  summaries: {
+    road_density: 'areaWeightedMean',
+    road_length: function (memo, feature) {
+      var area = turf.area(feature) / 1e6
+      return (memo || 0) + (feature.properties.road_density * area)
+    }
+  },
+  popup: new mapboxgl.Popup({ closeButton: false }).addTo(map)
+})
+
+</script>
+
+</body>
+</html>

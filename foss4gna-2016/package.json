@@ -1,0 +1,18 @@
+{
+  "name": "vt-grid-examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "download-oqa-planet": "curl https://s3.amazonaws.com/mapbox/osm-qa-tiles/latest.planet.mbtiles.gz | gunzip > data/planet.mbtiles"
+  },
+  "author": "Anand Thakker <vestibule@anandthakker.net> (http://anandthakker.net/)",
+  "license": "ISC",
+  "dependencies": {
+    "cheap-ruler": "^2.3.0",
+    "lodash.flatten": "^4.2.0",
+    "mapbox-upload": "^4.2.2",
+    "vt-grid": "^4.1.1"
+  }
+}
