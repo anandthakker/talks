@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Big</title>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <link href='../big.css' rel='stylesheet' type='text/css' />
+  <script src='../big.js'></script>
+  <style>
+    .no-repeat { background-repeat: no-repeat; }
+    em, .em { color: #cf3f02; }
+    small { font-weight: normal; white-space: pre; }
+    pre { font-weight: normal; }
+  </style>
+</head>
+<body>
+  <div>
+    Data Analysis with Vector Tiles
+    <notes>
+    I'm going to talk about the possibility of doing interactive data analysis in the browser.
+    </notes>
+  </div>
+
+  <div>
+    Ways to do in-browser, interactive analysis:
+    <ul>
+      <li>Just use GeoJSON <em class='hidden'>(size-limited)</em></li>
+      <li>PostGIS (or some other) backend <em class='hidden'>(complexity)</em></li>
+    </ul>
+    <notes>
+    Two great, well-established answers: (1) just use GeoJSON, or (2) offload some of it to something like a PostGIS backend.
+    </notes>
+  </div>
+
+  <div>
+    Ways to do in-browser, interactive analysis:
+    <ul>
+      <li>Just use GeoJSON <em>(size-limited)</em></li>
+      <li>PostGIS (or some other) backend <em class='hidden'>(complexity)</em></li>
+    </ul>
+    <notes>
+    Plain GeoJSON is great, but it's size-limited.
+    </notes>
+  </div>
+
+  <div>
+    Ways to do in-browser, interactive analysis:
+    <ul>
+      <li>Just use GeoJSON <em>(size-limited)</em></li>
+      <li>PostGIS (or some other) backend <em>(complexity)</em></li>
+    </ul>
+    <notes>
+    If there's too much data for that, a natural answer is to use PostGIS on the backend to dynamically serve up the data you need.
+    </notes>
+    <notes>
+    The downside here is complexity: you have the extra overhead of setting up and maintaining a server.
+    </notes>
+    <notes>
+    Also, this approach means you'll need a round-trip to the server for each user interaction, or else a bunch of extra logic to pre-fetch data as the map moves.
+    </notes>
+  </div>
+
+  <div>
+    These <em>analysis</em> problems are very similar to <em>rendering</em> problems.
+    <notes>
+These are the same problems faced when trying to render in the browser, and this is exactly what VT's were designed to solve for.  Why not piggyback on this for data analysis, too?
+    </notes>
+  </div>
+
+  <div>
+    Example
+    <notes>
+    a. The squares here are colored based on OSM road density. I'll explain how they're built later.
+    </notes>
+    <notes>
+    b. The data in the tooltip is coming from the same underlying vector tile source that's being used to render it.
+    </notes>
+    <notes>
+    c. (Draw polygon, move it around) Using a little plugin based mostly on Turf.js
+    </notes>
+    <notes>
+    d. (Zoom out, do it again) Here's the "scale-independence" that vector tiles really help with: same thing, but over much larger area.
+    </notes>
+  </div>
+
+  <div>
+    How:
+    <ul>
+      <li>building the vector tiles</li>
+      <li>data-driven styling</li>
+      <li>aggregate/summarize data</li>
+    </ul>
+  </div>
+
+  <!--
+  <div>
+    Vector tiles
+    <ul>
+      <li>tiled data: cache, cull by zoom level, query by viewport</li>
+      <li>no server (or simple one)</li>
+      <li>much of the client-side work can piggyback </li>
+    </ul>
+    <notes>
+    Vector tiles 
+    </notes>
+  </div>
+  -->
+
+  <div>
+    Building the Vector Tiles
+    <notes>
+    This is definitely the most challenging part.
+    </notes>
+    <notes>
+    Typical strategy, simplifying and dropping features, works great for *rendering*: why keep the data around at zoom levels where you can't even see it?  This is what existing tools like Mapbox Studio and tippecanoe are designed for.
+    </notes>
+    <notes>
+    But doesn't work for us if we want to do stuff with the numbers. Instead, we went for this grid approach: thus the grid-based approach you just saw.
+    </notes>
+  </div>
+
+  <div>
+    Building the Vector Tiles: <em>vt-grid</em>
+<pre>
+<span style='color: gray'>// run over each "raw input" feature</span>
+function aggregate (sum, feature) {
+  if (feature.properties.highway) {
+    return sum + lineDistance(feature)
+  } else {
+    return sum
+  }
+}
+<span style='color: gray'>// apply to each grid cell output</span>
+function postAggregate (cell) {
+  var length = cell.properties.roads_km
+  return length / area(cell.geometry)
+}
+</pre>
+    <notes>
+    vt-grid is a little node module we built to help create tilesets
+    </notes>
+    <notes>
+    Uses 'tile-reduce' (which you can hear much more about tomorrow) and 'tippecanoe'
+    to apply simple functions like this over raw data to build a grid of aggregated data.
+    </notes>
+  </div>
+
+  <div>
+    Frontend: Mapbox GL JS plugins
+    <dl>
+      <dt>Data-Driven Style 'polyfill'</dt>
+      <dd><code>github:developmentseed/ <em>mapbox-gl-datadriven</em></code></dd>
+      <dt>View/Summarize Data</dt>
+      <dd><code>github:anandthakker/ <em>mapbox-gl-datascope</em></code></dd>
+    </dl>
+  </div>
+
+  <div>
+    Questions? What's Missing? What's Next?
+  </div>
+
+  <div>
+    Links
+    <ul>
+      <li><a href='https://github.com/anandthakker/foss4gna-2016-talk'>code for this talk</a></li>
+      <li><a href='https://github.com/mapbox/tippecanoe'>tippecanoe</a></li>
+      <li><a href='https://github.com/mapbox/tile-reduce'>tile-reduce</a></li>
+      <li><a href='https://github.com/developmentseed/vt-grid'>vt-grid</a></li>
+      <li><a href='https://github.com/developmentseed/mapbox-gl-datadriven'>mapbox-gl-datadriven</a></li>
+      <li><a href='https://github.com/anandthakker/mapbox-gl-datascope'>mapbox-gl-datascope</a></li>
+    </ul>
+  </div>
+
+</body>
+</html>
