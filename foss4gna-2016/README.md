@@ -7,7 +7,7 @@
 
 <ul>
   <li><a href='https://github.com/developmentseed/vt-grid'>vt-grid</a></li>
-  <li><a href='https://github.com/developmentseed/mapbox-gl-datadriven'>mapbox-gl-datadriven</a></li>
+  <li><a href='https://github.com/anandthakker/mapbox-gl-datadriven'>mapbox-gl-datadriven</a></li>
   <li><a href='https://github.com/anandthakker/mapbox-gl-datascope'>mapbox-gl-datascope</a></li>
   <li><a href='https://github.com/mapbox/tippecanoe'>tippecanoe</a></li>
   <li><a href='https://github.com/mapbox/tile-reduce'>tile-reduce</a></li>
