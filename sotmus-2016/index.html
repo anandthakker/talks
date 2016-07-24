@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Big</title>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <link href='../big.css' rel='stylesheet' type='text/css' />
+  <script src='../big.js'></script>
+  <style>
+    .no-repeat { background-repeat: no-repeat; }
+    em, .em { color: #cf3f02; }
+    ins { color: #02cf3f; }
+    small { font-weight: normal; white-space: pre; }
+    pre { font-weight: normal; }
+    .github-links {
+      list-style-type: none;
+      margin-left: 50px;
+      line-height: 1.5;
+    }
+    .github-links li a {
+      background: black;
+      color: #34d0e7;
+    }
+    .github-links li a:before {
+      content: '/';
+    }
+
+    body {
+      background-size: contain;
+      background-position: top center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .caption {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 30px;
+      line-height: 40px;
+      letter-spacing: 0;
+      background: black;
+      text-align: center;
+    }
+  </style>
+</head>
+<body style='position: relative;'>
+  <div>
+    <notes>Introduction</notes>
+  </div>
+
+  <div>
+    OSM data
+    <nobr>+ satellite imagery</nobr>
+    <nobr>+ machine learning</nobr>
+    <nobr><em>= Skynet</em></nobr>
+<notes>.
+Terminator
+
+I'm not an expert at ML (and, frankly, I'm also quite new to the OSM world)... but I think ML's really fascinating, and I think there's real promise in using it with OSM data.
+
+  - (a) Why I think ML+OSM is a good idea.
+  - (b) The experiments I've been working on: what I've tried, what's failed, what's worked.
+  - (c) How you can replicate and extend it.
+</notes>
+  </div>
+
+  <div>
+    Image credits: satellite / aerial imagery is from Mapbox Satellite tiles, z16 - z17
+    <small>(mostly NAIP and Digital Globe)</small>
+    <notes>Image credits</notes>
+  </div>
+
+  <div>
+    Why?
+  </div>
+
+  <div>
+    <em>Answer 1:</em><br>
+    Image classification, feature extraction, etc. are <em>hard</em> problems, and certain ML algorithms seem to <em>&hearts;</em> them.
+  </div>
+
+  <div>
+    <blockquote>Despite 30 years of work on automatic road detection, no automatic or semi-automatic road detection system is currently on the market and no published method has been shown to work reliably on large datasets of urban imagery</blockquote>
+    <cite><a href="">Mnih and Hinton, 2010</a></cite>
+    <notes>Hard problem
+From my admittedly amateur research, I haven't found reason to believe that this has changed much in the past 5-6 years.</notes>
+  </div>
+
+  <div><img src='hat-with-brim.png'>
+    <aside class='caption'>"Building a deeper understanding of images", Google Research Blog</aside>
+    <notes>ML hearts CV:
+Machine learning is an incredibly broad field, but computer vision is one area where it really shines, and where its recent advances have been both mind-boggling and totally mundane.
+
+Mundane: things like face detection/recognition, voice recognition on smartphones
+
+Mind-boggling: style transfer
+</notes>
+  </div>
+
+  <div>
+    <em>Answer 2:</em><br>
+    OSM + satellite imagery is a <em>great fit</em> for machine learning.
+    <notes>To say why, I'll give a quick explanation of what ML is for those unfamiliar with it.</notes>
+  </div>
+
+  <div>
+    Machine Learning <small>('Supervised' Learning)</small>
+    <ul>
+      <li>Model: takes an input, 'predicts' the output</li>
+      <li>Training data: inputs + 'true' / 'expected' outputs</li>
+    </ul>
+<notes>.
+I'm going to focus here on one major branch of ML, called "supervised learning."  For a really nice, broader intro, I recommend checking out Stuart Lynn's talk from this year's FOSS4G-NA, "Machine Learning with Geospatial Data" -- it's on YouTube.
+
+Ok, here's the idea with supervised learning.  You have a *model*, which is basically a function that takes inputs and produces outputs.  There are many, many different kinds of models: neural networks, random forests, support vector machines; but, especially for those of us who are not ML researchers, these models are often pretty much black boxes.
+
+You also have some *training data*.  This is a set of inputs for which you already know the correct or desired output.  E.g.:
+ - flickr images and their categories
+ - audio clips and their text transcriptions
+ - photographs and the locations of human faces
+</notes>
+  </div>
+
+
+  <div>
+    Training a Model
+    <ul>
+      <li>Apply model to inputs</li>
+      <li>Compare model's prediction to ground truth</li>
+      <li>Tweak the model based on error</li>
+      <li>Repeat (a lot)</li>
+    </ul>
+    <notes>
+Once you have those, the big picture idea for ML training is really very simple: you take your model, which starts out completely wrong and random.  You apply it to the inputs in your training data to get its "predicted" output, and then compare that to the "known" / "expected" / "ground truth" outputs.  Based on the error, tweak the model's parameters to make it better -- e.g., if the outputs were too big, tweak the model to produce smaller numbers.  Now repeat... a LOT.
+
+Now, the details -- especially in calculating error and then tweaking model parameters -- that is some subtle stuff which depends quite a bit on the inner workings of the models you're using; but, fortunately, that complexity is mostly taken care of by ML tools and libraries.
+
+Anyway, the real magic here is that if things go well, then after you've trained the model, it will *generalize* beyond the training data, producing (mostly) correct answers for inputs that *weren't* in your training data.
+    </notes>
+  </div>
+
+  <div>
+    <em>Answer 2:</em><br><nobr>imagery (input)</nobr> <nobr>+ OSM (ground truth)</nobr> <nobr>= <em>amazing</em> training data</nobr>
+    <img src='input-and-gt.png' />
+    <notes>In general, one of the biggest challenges in machine learning is getting good training data, and this is what I mean about imagery + OSM being a great fit for machine learning: it represents an amazing source of training data.</notes>
+  </div>
+
+  <div>
+    <em>Answer 3:</em><br>Improving and complementing OSM
+    <notes>
+    Automatically prioritize tracing work
+    Maybe even initialize it?
+    Suggest tags for existing features
+    </notes>
+  </div>
+
+  <div>
+  <notes>
+Okay, so that's the why.  Now before I dive into the experiments I've been working on, I just want to mention some similar work that others have been doing.
+  </notes>
+  </div>
+
+  <div>
+    DeepOSM
+    (deeposm.org)
+    <notes>
+    Work by Andrew Johnson; uses a neural network to detect OSM errors
+    </notes>
+  </div>
+  <div data-bodyclass='contain'><img src='deeposm.png'></div>
+
+  <div><img src='deeposm-fixed.png'>
+    <aside class='caption'>
+    (changeset #<a href='https://www.openstreetmap.org/changeset/40977729'>40977729</a>)
+    </aside>
+  </div>
+
+  <div>
+    Terrapattern<br>
+    (terrapattern.com)
+  </div>
+  <div><img src='terrapattern-1.png'></div>
+  <div><img src='terrapattern-2.png'></div>
+
+  <div>
+    Skynet Experiments
+    <notes>
+    Big goal is automatic feature extraction, and, in particular, extracting road geometries from satellite imagery.
+    </notes>
+  </div>
+
+  <div><img src='segnet.png'>
+    <aside class='caption'>Image segmentation with SegNet</aside>
+    <notes>
+My experiments so far have all been based on a particular neural network model called SegNet.
+  - "semantic segmentation" = essentially carving up an image into distinct, categorized pieces
+  - Late 2015, by researchers at University of Cambridge
+  - Based on the "VGG-16" network, which was also one of the ImageNet winners in 2014
+  - 26 or 89 layers, depending on how you count (26 "convolution" layers)
+  - "State of the art" image segmentation results
+    </notes>
+  </div>
+
+  <div>
+    Training data
+    <ul>
+      <li>Mapbox Satellite tiles</li>
+      <li>OSM QA Tiles &rarr; Mapnik &rarr; ground truth tiles</li>
+    </ul>
+    Scripts at <a href='https://github.com/developmentseed/skynet-data'>github.com/developmentseed/skynet-data</a>
+  </div>
+
+  <div>
+    <img src='training-data-too-narrow.png'>
+    <notes>Here's what the training data looks like.  Left is the input image; right is the "ground truth" rendered from OSM.
+
+    But, this is also an example of one of my first mistakes: I rendered the roads here at a width of 1 pixel; when I used this for training, I found that the network just couldn't learn from it.</notes>
+  </div>
+
+  <div>
+    <pre>
+[{
+  "name": "Road",
+  "color": "#ffffff",
+  "stroke-width": <em><del>"1"</del><ins>"5"</ins></em>,
+  "filter": "[highway].match('.+') and not
+             ([tunnel] = 'yes' or [tunnel]='true')"
+}, {
+  "name": "Building",
+  "color": "#ff0000",
+  "filter": "[building].match('.+')"
+}]
+    </pre>
+    <notes>But this is pretty easy to fix with the skynet-data scripts.  They use a small JSON description for each different "class" that we want the network to identify; all I had to do was bump the stroke width from 1 to 5 and re-render.  You can also see here how the filter that's being used to pull out the right features for each category.
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts7-1.png'>
+      <img src='ts7-2.png'>
+      <img src='ts7-3.png'>
+      <img src='ts7-4.png'>
+      <aside style='background-color: black; position: absolute; width: 5em; right: 0; top: 0; bottom: 0'>
+    </span>
+    <notes>
+    Once we did this, we got our first interesting results.
+
+    Training set was 4000 z16 tiles, randomly sampled from the continental US.
+
+    Note: this image (and all the ones I'll show), is actually from a smaller _TEST_ set that was specifically NOT used in training.  This is important: whenever testing how the model performs, we never use images that were part of the training, because we don't just want to see if the model "memorized" those answers.
+
+    So, here are some examples of how our model performed after just a few hours of training:
+    </notes>
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts7-1.png'>
+      <img src='ts7-2.png'>
+      <img src='ts7-3.png'>
+      <img src='ts7-4.png'>
+      <aside style='background-color: black; position: absolute; width: 2.5em; right: 0; top: 0; bottom: 0'>
+    </span>
+    <notes>
+    Not... terrible... but not that great either.  The predictions are quite fuzzy.  Also, it's not shown here, but the model also gets really easily confused by shadows at this point.
+
+    But if we keep iterating for a whole day or two...
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts7-1.png'>
+      <img src='ts7-2.png'>
+      <img src='ts7-3.png'>
+      <img src='ts7-4.png'>
+    </span>
+    <notes>
+    The model really starts to sharpen up as it gets older!
+
+    I started getting pretty excited at these results, but one limitation here is that most of the tiles in this training and testing dataset have pretty low road density.  And, indeed, if we look at how this model performs in a more urban environment...
+    </notes>
+  </div>
+
+  <div>
+    <span style='display: inline-block; vertical-align: top; width: 14em; padding-left: calc(50vw - 11em - 75px)'>
+      <img style='' src='ts7-seattle.png'><br>
+      <img style='' src='ts7-seattle-2.png'>
+    </span>
+    <img style='width: 7.5em' src='ts7-seattle-closeup.png'>
+    <notes>
+    We're back to really fuzzy, indistinct predictions, even from the "older", more trained model.  So, early last week, I put together a set of training data using tiles only from Seattle and started training a model that, hopefully, would do better at detecting streets in cases like this.
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts9-1.png'>
+      <img src='ts9-2.png'>
+      <img src='ts9-3.png'>
+      <img src='ts9-4.png'>
+      <aside style='background-color: black; position: absolute; width: 5em; right: 0; top: 0; bottom: 0'>
+    </span>
+    <notes>.
+  - 6700 training images
+  - z17 instead of z16 -- that's closer to 1m resolution rather than 2m
+    </notes>
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts9-1.png'>
+      <img src='ts9-2.png'>
+      <img src='ts9-3.png'>
+      <img src='ts9-4.png'>
+    </span>
+    <notes>
+    Here's how the model did.
+    </notes>
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts9-parkinglot.png'>
+    </span>
+    <notes>
+One common point of failure that I noticed here was that parking lots like this one tend to confuse the model.  I think that retraining with a separate label for parking lots might be very helpful, but I haven't investigated whether we've got good, tagged polygons for parking lots in OSM.
+    </notes>
+  </div>
+
+  <div>
+    <span style='text-align: center; display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img style='width: 4em' src='ts9-shadows-2.png'>
+      <img style='width: 4em' src='ts9-shadows-3.png'>
+      <img style='width: 10em' src='ts9-shadows-1.png'>
+    </span>
+    <notes>On the other hand, the model seems to handle visual breaks in the road quite well; for example, you can see here that even though trees' shadows are falling across the road, the model still produces a nice, smooth line.
+    
+    There's also that false positive up there -- and there are definitely plenty of these that hurt the model's accuracy.  But there are _also_ cases like this one...
+    </notes>
+  </div>
+
+  <div>
+    <span style='display: inline-block; position: relative; width: 10em; padding-left: calc(50vw - 5em - 75px);'>
+      <img src='ts9-good-false-positive.png'>
+    </span>
+    <notes>...where the model finds roads that are not in OSM, and gets a worse accuracy score for it.  This is one of the challenges of using OSM data for ground truth: it's quite hard to assess accuracy.</notes>
+  </div>
+
+  <div>
+    <a target="_blank" href='http://54.174.133.8/static/index.html?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJjaXA3ZjZ5a3owMTJ5c21ub3pzZ25vbWd2In0.Gi3H1L7dXmCj2ldnbf0rNQ#11/47.6000/-122.4000'>Demo!</a>
+  </div>
+
+  <div>
+    Training and testing scripts: <a href='https://github.com/developmentseed/skynet-train'>github.com/developmentseed/skynet-train</a>
+    (Disclaimer: this repo is a mess!)<br>
+    <br>
+    Soon: pre-trained model "weights"
+  </div>
+
+  <div>
+    What's Next
+    <ul>
+      <li>
+        Improving Training
+        <ul>
+          <li>Filter training data with OSM completeness/quality metrics</li>
+          <li>How much can we improve the model's ability to generalize?</li>
+          <li>Do we really a model as large/complex as SegNet?</li>
+          <li>Incorporate telemetry?</li>
+        </ul>
+      </li>
+      <li>
+        Improving Output
+        <ul>
+          <li>Diff against existing OSM features</li>
+          <li>Vectorize results</li>
+        </ul>
+      </li>
+      <li>Train against buildings</li>
+      <li>Train against road surface type</li>
+      <li>Integrate with... MapSwipe, iD, ...?</li>
+      <li>much,</li>
+      <li>much</li>
+      <li>more...</li>
+    </ul>
+  </div>
+
+  <div>
+    Questions?
+  </div>
+
+</body>
+</html>

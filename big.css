@@ -1,5 +1,6 @@
 body {
   font-family:'Helvetica';
+  letter-spacing:-5px;
   background:#000;
   background-size:100%;
   color:#fff;
@@ -8,15 +9,11 @@ body {
   font-weight:bold;
 }
 
-h1, h2, h3 {
-  letter-spacing:-5px;
-}
-
 h1, h2, h3, p {
   margin:0;
 }
 
-em, a, .em {
+em, a {
   font-style:normal;
   color:#8dbd0c;
 }
@@ -41,10 +38,6 @@ div {
   line-height:97%;
 }
 
-ul,dl,ol {
-  line-height: 1.2;
-}
-
 div.center {
   text-align:center;
 }
@@ -53,9 +46,6 @@ div.imageText {
   text-shadow:0px 0px 5px rgba(0,0,0,0.2);
 }
 
-.hidden { visibility: hidden; }
-
-
 notes {
     display:none;
 }
@@ -63,4 +53,3 @@ notes {
 :focus {
     outline: 0;
 }
-
