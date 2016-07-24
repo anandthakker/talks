@@ -29,7 +29,7 @@ window.onload = function() {
     for (i = 0; i < s.length; i++) s[i].style.display = 'none';
     e.style.display = 'inline';
     e.focus();
-    for (i = 0; typeof console === 'object' && i < notes.length; i++) console.log('%c%s: %s', 'padding:5px;font-family:serif;font-size:18px;line-height:150%;', n + '/' + s.length, notes[i].innerHTML.trim());
+    for (i = 0; typeof console === 'object' && i < notes.length; i++) console.log('%c%s: %s', 'padding:5px;font-family:serif;font-size:18px;line-height:150%;', n + '/' + (s.length - 1), notes[i].innerHTML.trim());
     if (e.firstChild && e.firstChild.nodeName === 'IMG') {
       document.body.style.backgroundImage = 'url("' + e.firstChild.src + '")';
       e.firstChild.style.display = 'none';
