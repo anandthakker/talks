@@ -1,6 +1,8 @@
 
 # Skynet: OSM + satellite imagery + machine learning
 
+[Slides](http://anand.codes/talks/sotmus-2016/)
+
 ## Code
 
  - [skynet-data](https://github.com/developmentseed/skynet-data)
